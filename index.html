@@ -490,7 +490,19 @@
                     <label for="sensitivity">רגישות (<span id="sensitivityValue">50</span>%)</label>
                     <input type="range" id="sensitivity" min="10" max="100" value="50">
                 </div>
-            </div>
+            
+<div class="setting">
+    <label for="dotHoldSlider">⏱ משך זמן הדלקה של נקודה: <span id="dotHoldDisplay">300</span> מ״ש</label>
+    <input type="range" id="dotHoldSlider" min="50" max="1000" step="50" value="300">
+</div>
+<script>
+  document.getElementById("dotHoldSlider").addEventListener("input", function(e) {
+    dotHoldDuration = parseInt(e.target.value);
+    document.getElementById("dotHoldDisplay").innerText = dotHoldDuration;
+  });
+</script>
+
+</div>
             <div class="debug-info" id="debugInfo">
                 🔍 Debug: Volume=0%, Bass=0%, Rhythm=0%, Intensity=0, Dots=0/100
             </div>
@@ -565,7 +577,11 @@
         let lightMode = 'ALL_BEAT';
         let lightGrid = Array(10).fill().map(() => Array(10).fill(false));
         let demoInterval = null;
-        let activeDotIndices = new Set();
+        
+let activeDotIndices = new Set();
+let lastDotUpdateTime = 0;
+let dotHoldDuration = 300; // milliseconds
+
         
         // Dynamic scaling for better normalization
         let maxValues = {
@@ -978,7 +994,13 @@
                 
                 // Light up random dots based on intensity
                 if (targetDots > 0) {
-                    activeDotIndices = generateRandomDotIndices(targetDots);
+                    
+const now = Date.now();
+if (now - lastDotUpdateTime > dotHoldDuration) {
+    activeDotIndices = generateRandomDotIndices(targetDots);
+    lastDotUpdateTime = now;
+}
+
                     activeDotIndices.forEach(index => {
                         const dot = document.getElementById(`dot-${index}`);
                         if (dot) {
